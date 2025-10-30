@@ -1,31 +1,41 @@
-import axios from "axios";
+// src/components/home/Front.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../api/axiosConfig"; // <-- adjust if needed
 
 const Front = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const token = localStorage.getItem("sid");
-  const API_URL = process.env.REACT_APP_API_URL;
+
+  // Logout
   async function handleLogout() {
     try {
-      await axios.post(`${API_URL}/api/auth/user/logout`);
+      // include token if your logout route requires auth
+      await axiosInstance.post(
+        "/api/auth/user/logout",
+        {},
+        { headers: { Authorization: token ? `Bearer ${token}` : undefined } }
+      );
       localStorage.removeItem("sid");
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
+      // still clear and redirect if logout failed due to network
+      localStorage.removeItem("sid");
+      navigate("/login");
     }
   }
 
   function noteDetail(id) {
-    navigate(`/notes/${id}`)
+    navigate(`/notes/${id}`);
   }
 
   async function deletedSelect(id) {
     try {
-      await axios.delete(`${API_URL}/api/content/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
+      await axiosInstance.delete(`/api/content/${id}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+        // withCredentials: true, // enable only if your backend uses cookies/sessions
       });
       setNotes((prev) => prev.filter((note) => note._id !== id));
     } catch (error) {
@@ -36,11 +46,13 @@ const Front = () => {
   useEffect(() => {
     async function dataContent() {
       try {
-        const response = await axios.get("http://localhost:5000/api/content", {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        const response = await axiosInstance.get("/api/content", {
+          headers: { Authorization: token ? `Bearer ${token}` : undefined },
+          // withCredentials: true, // enable only if backend requires cookies
         });
-        setNotes(response.data.content);
+        // backend might return { content: [...] } or directly [...]
+        const content = response?.data?.content ?? response?.data ?? [];
+        setNotes(Array.isArray(content) ? content : []);
       } catch (error) {
         console.error("Error fetching notes:", error);
       }
@@ -70,22 +82,28 @@ const Front = () => {
           <p className="text-gray-500 text-center">No notes yet. Create one!</p>
         ) : (
           <ul className="space-y-4">
-            {notes.map((note) => (
-              <li
-                key={note._id}
-                className="flex justify-between items-center bg-gray-100 hover:bg-gray-200 rounded-lg p-4 transition"
-              >
-                <span onClick={()=>noteDetail(note._id)} className="text-lg text-gray-800 font-medium">
-                  {note.Header}
-                </span>
-                <button
-                  onClick={() => deletedSelect(note._id)}
-                  className="text-red-500 hover:text-red-700 font-semibold"
+            {notes.map((note) => {
+              const title = note?.header ?? note?.Header ?? note?.title ?? "Untitled";
+              return (
+                <li
+                  key={note._id}
+                  className="flex justify-between items-center bg-gray-100 hover:bg-gray-200 rounded-lg p-4 transition"
                 >
-                  Delete
-                </button>
-              </li>
-            ))}
+                  <span
+                    onClick={() => noteDetail(note._id)}
+                    className="text-lg text-gray-800 font-medium cursor-pointer"
+                  >
+                    {title}
+                  </span>
+                  <button
+                    onClick={() => deletedSelect(note._id)}
+                    className="text-red-500 hover:text-red-700 font-semibold"
+                  >
+                    Delete
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

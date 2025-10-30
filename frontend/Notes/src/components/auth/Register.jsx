@@ -1,14 +1,14 @@
+// src/components/auth/Register.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../api/axiosConfig"; // adjust path if needed
 
 const Register = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); // change to `name` if backend expects `name`
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_URL;
 
   const isFormValid = username.trim() && email.trim() && password.trim();
 
@@ -17,7 +17,7 @@ const Register = () => {
     setError("");
 
     try {
-      const res = await axios.post(`${API_URL}/api/auth/user/register`, {
+      const res = await axiosInstance.post("/api/auth/user/register", {
         username,
         email,
         password,
@@ -25,14 +25,18 @@ const Register = () => {
 
       console.log("Registration succeeded:", res.data);
 
-      if (res.data.token) {
-        localStorage.setItem("sid", res.data.token);
+      const token = res?.data?.token;
+      if (token) {
+        localStorage.setItem("sid", token);
         navigate("/home");
+      } else {
+        setError("Registration succeeded but no token returned.");
       }
     } catch (err) {
       console.error("Registration error:", err);
       if (err.response?.data?.message) setError(err.response.data.message);
-      else setError("Network error");
+      else if (err.message) setError("Network error");
+      else setError("Registration failed");
     }
   };
 

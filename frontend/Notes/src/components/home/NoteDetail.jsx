@@ -1,49 +1,69 @@
-import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+// src/components/home/NoteDetail.jsx
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import _ from "lodash";
+import axiosInstance from "../../api/axiosConfig"; // adjust path if needed
 
 const NoteDetail = () => {
-  const { id } = useParams(); // get note id from URL
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [note, setNote] = useState(null);
-  const [status, setStatus] = useState("Idle"); // for showing save status
-  const [loading, setLoading] = useState(true);
-  const API_URL = process.env.REACT_APP_API_URL;
 
+  const [note, setNote] = useState(null);
+  const [status, setStatus] = useState("Idle");
+  const [loading, setLoading] = useState(true);
+
+  // Fetch note once
   useEffect(() => {
+    let mounted = true;
     const fetchNote = async () => {
       try {
         const token = localStorage.getItem("sid");
-        const res = await axios.get(`${API_URL}/api/content/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axiosInstance.get(`/api/content/${id}`, {
+          headers: { Authorization: token ? `Bearer ${token}` : undefined },
         });
-        setNote(res.data.content);
-      } catch (error) {
-        console.error("Error fetching note:", error);
-        navigate("/home"); // redirect if note not found
-      } finally {const API_URL = process.env.REACT_APP_API_URL;
-      
-        setLoading(false);
+        // Normalize returned data: backend might return { content: {...} } or {...}
+        const data = res?.data?.content ?? res?.data ?? null;
+        if (!data) {
+          if (mounted) {
+            setNote(null);
+            navigate("/home");
+          }
+          return;
+        }
+        // Normalize title field to `header`
+        const normalized = {
+          ...data,
+          header: data.header ?? data.Header ?? data.title ?? "",
+          content: data.content ?? data.body ?? "",
+        };
+        if (mounted) setNote(normalized);
+      } catch (err) {
+        console.error("Error fetching note:", err);
+        navigate("/home");
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
     fetchNote();
+    return () => {
+      mounted = false;
+    };
   }, [id, navigate]);
 
+  // Debounced autosave
   const autoSave = useCallback(
     _.debounce(async (updatedNote) => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("sid");
         setStatus("Saving...");
-        await axios.put(
-          `${API_URL}/api/content/${id}`,
-          updatedNote,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+        // Send only fields your backend expects
+        await axiosInstance.put(
+          `/api/content/${id}`,
+          { header: updatedNote.header, content: updatedNote.content },
+          { headers: { Authorization: token ? `Bearer ${token}` : undefined } }
         );
         setStatus("Saved ✅");
-        setTimeout(() => setStatus("Idle"), 2000);
+        setTimeout(() => setStatus("Idle"), 1500);
       } catch (error) {
         console.error("Error auto-saving:", error);
         setStatus("Error ❌");
@@ -52,35 +72,34 @@ const NoteDetail = () => {
     [id]
   );
 
+  // Cancel debounce on unmount
+  useEffect(() => {
+    return () => {
+      autoSave.cancel && autoSave.cancel();
+    };
+  }, [autoSave]);
+
   const handleChange = (field, value) => {
     if (!note) return;
-    const updatedNote = { ...note, [field]: value };
-    setNote(updatedNote);
-    autoSave(updatedNote);
+    const updated = { ...note, [field]: value };
+    setNote(updated);
+    autoSave(updated);
   };
 
   if (loading) {
-    return (
-      <div className="p-6 text-gray-600 text-lg font-medium">
-        Loading note...
-      </div>
-    );
+    return <div className="p-6 text-gray-600 text-lg">Loading note...</div>;
   }
 
   if (!note) {
-    return (
-      <div className="p-6 text-red-500 text-lg font-medium">
-        Note not found.
-      </div>
-    );
+    return <div className="p-6 text-red-500 text-lg">Note not found.</div>;
   }
 
   return (
     <div className="p-6">
       <input
         type="text"
-        value={note.Header || ""}
-        onChange={(e) => handleChange("Header", e.target.value)}
+        value={note.header || ""}
+        onChange={(e) => handleChange("header", e.target.value)}
         className="w-full text-2xl font-bold mb-4 border-b p-2 outline-none"
         placeholder="Note title"
       />

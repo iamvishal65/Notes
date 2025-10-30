@@ -1,10 +1,11 @@
+// frontend/Notes/src/components/auth/Logincheck.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../api/axiosConfig"; // adjust path if needed
 
 const Logincheck = () => {
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
@@ -14,16 +15,16 @@ const Logincheck = () => {
           return;
         }
 
-        const response = await axios.post(
-          `${API_URL}/api/auth/user/checkUser`,
+        const response = await axiosInstance.post(
+          "/api/auth/user/checkUser",
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
+            // withCredentials: true, // enable only if your backend uses cookies/sessions
           }
         );
 
-        if (response.status === 200) navigate("/home");
+        if (response?.status === 200) navigate("/home");
         else navigate("/chooseRegister");
       } catch (error) {
         console.error("Login check failed:", error);
@@ -37,4 +38,4 @@ const Logincheck = () => {
   return <div>Checking login status...</div>;
 };
 
-export default Logincheck; // ✅ Make sure you have default export
+export default Logincheck;
