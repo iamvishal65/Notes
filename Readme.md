@@ -1,0 +1,1 @@
+Here in this project we build the notes application with the help of the different progmmning tools and languages like the React , Tawilwind, Node and Express .These are the main one and there also sub
