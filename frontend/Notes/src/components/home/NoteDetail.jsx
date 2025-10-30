@@ -9,19 +9,21 @@ const NoteDetail = () => {
   const [note, setNote] = useState(null);
   const [status, setStatus] = useState("Idle"); // for showing save status
   const [loading, setLoading] = useState(true);
+  const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchNote = async () => {
       try {
         const token = localStorage.getItem("sid");
-        const res = await axios.get(`http://localhost:5000/api/content/${id}`, {
+        const res = await axios.get(`${API_URL}/api/content/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setNote(res.data.content);
       } catch (error) {
         console.error("Error fetching note:", error);
         navigate("/home"); // redirect if note not found
-      } finally {
+      } finally {const API_URL = process.env.REACT_APP_API_URL;
+      
         setLoading(false);
       }
     };
@@ -34,7 +36,7 @@ const NoteDetail = () => {
         const token = localStorage.getItem("token");
         setStatus("Saving...");
         await axios.put(
-          `http://localhost:5000/api/content/${id}`,
+          `${API_URL}/api/content/${id}`,
           updatedNote,
           {
             headers: { Authorization: `Bearer ${token}` },

@@ -7,6 +7,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const API_URL = process.env.REACT_APP_API_URL;
   function goRegister(){
     navigate('/register');
   }
@@ -18,7 +19,7 @@ const Login = () => {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/user/login", {
+      const res = await axios.post(`${API_URL}/api/auth/user/login`, {
         email,
         password,
       });

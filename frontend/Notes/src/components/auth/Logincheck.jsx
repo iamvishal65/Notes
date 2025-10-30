@@ -4,7 +4,7 @@ import axios from "axios";
 
 const Logincheck = () => {
   const navigate = useNavigate();
-
+  const API_URL = process.env.REACT_APP_API_URL;
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
@@ -15,7 +15,7 @@ const Logincheck = () => {
         }
 
         const response = await axios.post(
-          "http://localhost:5000/api/auth/user/checkUser",
+          `${API_URL}/api/auth/user/checkUser`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },

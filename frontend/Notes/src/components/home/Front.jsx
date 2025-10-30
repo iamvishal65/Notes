@@ -6,10 +6,10 @@ const Front = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState([]);
   const token = localStorage.getItem("sid");
-
+  const API_URL = process.env.REACT_APP_API_URL;
   async function handleLogout() {
     try {
-      await axios.post("http://localhost:5000/api/auth/user/logout");
+      await axios.post(`${API_URL}/api/auth/user/logout`);
       localStorage.removeItem("sid");
       navigate("/login");
     } catch (error) {
@@ -23,7 +23,7 @@ const Front = () => {
 
   async function deletedSelect(id) {
     try {
-      await axios.delete(`http://localhost:5000/api/content/${id}`, {
+      await axios.delete(`${API_URL}/api/content/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });

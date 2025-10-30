@@ -11,7 +11,7 @@ const NewNotesPage = () => {
   const token = localStorage.getItem("sid"); // saved on login
 
   const [noteId, setNoteId] = useState(null);
-
+  const API_URL = process.env.REACT_APP_API_URL;
   useEffect(() => {
     if (!title && !content) return;
     const timer = setTimeout(async () => {
@@ -19,7 +19,7 @@ const NewNotesPage = () => {
         if (noteId) {
           // Update existing note
           await axios.put(
-            `http://localhost:5000/api/content/${noteId}`,
+            `${API_URL}/api/content/${id}`,
             { Header: title, content },
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -27,7 +27,7 @@ const NewNotesPage = () => {
         } else {
           // Create new note once
           const res = await axios.post(
-            "http://localhost:5000/api/content",
+           `${API_URL}/api/content/${id}`,
             { Header: title, content },
             { headers: { Authorization: `Bearer ${token}` } }
           );
