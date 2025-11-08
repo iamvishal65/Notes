@@ -48,7 +48,7 @@ const Front = () => {
       try {
         const response = await axiosInstance.get("/api/content", {
           headers: { Authorization: token ? `Bearer ${token}` : undefined },
-          // withCredentials: true, // enable only if backend requires cookies
+        
         });
         // backend might return { content: [...] } or directly [...]
         const content = response?.data?.content ?? response?.data ?? [];
