@@ -2,7 +2,8 @@ const contentModel = require("../models/content.model");
 
 async function createContent(req, res) {
   try {
-    // set by auth middleware
+    console.log("here");
+    
     const newNote = await contentModel.create({
       Header: req.body.Header,
       content: req.body.content,

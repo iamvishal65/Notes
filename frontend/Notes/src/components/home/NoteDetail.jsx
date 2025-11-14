@@ -21,7 +21,7 @@ const NoteDetail = () => {
         const res = await axiosInstance.get(`/api/content/${id}`, {
           headers: { Authorization: token ? `Bearer ${token}` : undefined },
         });
-        // Normalize returned data: backend might return { content: {...} } or {...}
+
         const data = res?.data?.content ?? res?.data ?? null;
         if (!data) {
           if (mounted) {
@@ -33,7 +33,7 @@ const NoteDetail = () => {
         // Normalize title field to `header`
         const normalized = {
           ...data,
-          header: data.header ?? data.Header ?? data.title ?? "",
+          Header: data.header ?? data.Header ?? data.title ?? "",
           content: data.content ?? data.body ?? "",
         };
         if (mounted) setNote(normalized);
@@ -56,10 +56,10 @@ const NoteDetail = () => {
       try {
         const token = localStorage.getItem("sid");
         setStatus("Saving...");
-        // Send only fields your backend expects
+
         await axiosInstance.put(
           `/api/content/${id}`,
-          { header: updatedNote.header, content: updatedNote.content },
+          { Header: updatedNote.header, content: updatedNote.content },
           { headers: { Authorization: token ? `Bearer ${token}` : undefined } }
         );
         setStatus("Saved ✅");
@@ -93,9 +93,16 @@ const NoteDetail = () => {
   if (!note) {
     return <div className="p-6 text-red-500 text-lg">Note not found.</div>;
   }
-
   return (
-    <div className="p-6">
+    <div className="p-6 relative">
+      
+      <button
+        onClick={() => navigate("/home")}
+        className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+      >
+        Home
+      </button>
+
       <input
         type="text"
         value={note.header || ""}
@@ -103,12 +110,14 @@ const NoteDetail = () => {
         className="w-full text-2xl font-bold mb-4 border-b p-2 outline-none"
         placeholder="Note title"
       />
+
       <textarea
         value={note.content || ""}
         onChange={(e) => handleChange("content", e.target.value)}
         className="w-full h-96 p-4 border rounded-lg outline-none"
         placeholder="Start writing..."
       />
+
       <p className="text-sm text-gray-500 mt-2">{status}</p>
     </div>
   );

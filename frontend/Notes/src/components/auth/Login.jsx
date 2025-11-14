@@ -8,7 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_API_URL; // optional, kept for reference
+
 
   function goRegister() {
     navigate("/register");

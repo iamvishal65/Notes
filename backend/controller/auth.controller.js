@@ -8,7 +8,7 @@ if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined");
 }
 
-// Register user
+
 async function registerUser(req, res) {
   try {
     const { username, email, password } = req.body;
@@ -33,7 +33,7 @@ async function registerUser(req, res) {
   }
 }
 
-// Login user
+
 async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
@@ -56,7 +56,7 @@ async function loginUser(req, res) {
   }
 }
 
-// Verify user via Authorization header
+
 async function checkUser(req, res) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -73,7 +73,7 @@ async function checkUser(req, res) {
   }
 }
 
-// Logout (frontend should remove token)
+
 async function logoutUser(req, res) {
   res.status(200).json({ message: "Logout successful (remove token on client)" });
 }

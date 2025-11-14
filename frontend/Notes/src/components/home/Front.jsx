@@ -1,7 +1,6 @@
-// src/components/home/Front.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../api/axiosConfig"; // <-- adjust if needed
+import axiosInstance from "../../api/axiosConfig"; 
 
 const Front = () => {
   const navigate = useNavigate();
@@ -11,7 +10,7 @@ const Front = () => {
   // Logout
   async function handleLogout() {
     try {
-      // include token if your logout route requires auth
+      
       await axiosInstance.post(
         "/api/auth/user/logout",
         {},
@@ -21,7 +20,6 @@ const Front = () => {
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
-      // still clear and redirect if logout failed due to network
       localStorage.removeItem("sid");
       navigate("/login");
     }
@@ -46,11 +44,10 @@ const Front = () => {
   useEffect(() => {
     async function dataContent() {
       try {
-        const response = await axiosInstance.get("/api/content", {
+        const response = await axiosInstance.get(`/api/content`, {
           headers: { Authorization: token ? `Bearer ${token}` : undefined },
-        
         });
-        // backend might return { content: [...] } or directly [...]
+       
         const content = response?.data?.content ?? response?.data ?? [];
         setNotes(Array.isArray(content) ? content : []);
       } catch (error) {
@@ -87,10 +84,11 @@ const Front = () => {
               return (
                 <li
                   key={note._id}
+                  onClick={() => noteDetail(note._id)}
                   className="flex justify-between items-center bg-gray-100 hover:bg-gray-200 rounded-lg p-4 transition"
                 >
                   <span
-                    onClick={() => noteDetail(note._id)}
+                    
                     className="text-lg text-gray-800 font-medium cursor-pointer"
                   >
                     {title}
